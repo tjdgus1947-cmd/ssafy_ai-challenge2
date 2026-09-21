@@ -127,7 +127,7 @@ a) G마켓     b) G스토어    c) G숍      d) G마트
 ```
 .
 ├── notebooks/
-│   └── baseline_v10_TEMPLATE.ipynb   메인 파이프라인 (사본 만들어 _이름 붙여 사용)
+│   └── baseline_v9_7b_TEMPLATE.ipynb   메인 파이프라인 (사본 만들어 _이름 붙여 사용, 기본 값 7B)
 ├── src/
 │   ├── build_ocr_cache.py            OCR 캐시 생성 (독립 실행, shard 분할 지원)
 │   ├── ocr_match.py                  OCR 텍스트 ↔ 보기 매칭
