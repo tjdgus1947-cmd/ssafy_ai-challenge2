@@ -1,0 +1,72 @@
+# ─────────────────────────────────────────────────────────────
+#  절대 커밋하면 안 되는 것들
+#  데이터 1.7GB + 모델 24GB. 한 번 커밋하면 되돌리기 매우 번거롭다.
+#  (GitHub 파일당 100MB 제한, 레포 권장 1GB)
+# ─────────────────────────────────────────────────────────────
+
+# 대회 데이터
+data/
+ssafy-16-2-ai/
+*.zip
+*.7z
+train/
+test/
+dev/
+train.csv
+test.csv
+dev.csv
+sample_submission.csv
+
+# 사전학습 모델 (Qwen 3B 7.5GB, 7B 16GB)
+downloads/
+models/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.gguf
+
+# 학습 산출물
+runs/
+outputs/
+output/
+checkpoint*/
+lora_*/
+*_lora/
+adapter_model*
+wandb/
+
+# OCR 캐시 (수십 MB, 드라이브로 공유할 것)
+ocr/
+ocr_*.csv
+
+# 제출 파일은 최종본만 손으로 추가 (git add -f)
+submissions/*.csv
+!submissions/.gitkeep
+
+# ─────────────────────────────────────────────────────────────
+#  파이썬 / 환경
+# ─────────────────────────────────────────────────────────────
+baseline/
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.python-version
+
+# ─────────────────────────────────────────────────────────────
+#  에디터 / OS
+# ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 비밀키 (캐글 API 토큰 등)
+kaggle.json
+.env
+*.key
