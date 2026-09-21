@@ -6,14 +6,34 @@
 
 ---
 
+## 현재 성적
+
+| 실험 | 홀드아웃(500) | LB(public) |
+|---|---|---|
+| Qwen2.5-VL-3B 제로샷 (img 768) | 0.8600 | 0.86267 |
+| **Qwen2.5-VL-7B 제로샷 (img 768)** | **0.9120** | **0.91957** |
+
+베이스 모델은 **7B로 확정**. 상세 기록은 [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md)
+
+---
+
 ## 팀 구성
 
 | 이름 | 역할 | 담당 |
 |---|---|---|
 | 조은아 | 팀장 | (채우기) |
-| 김성현 | 팀원 | (채우기) |
+| 김성현 | 팀원 | ① 모델 선택 · TEMPLATE 관리 |
 | 박정연 | 팀원 | (채우기) |
 | 이희원 | 팀원 | (채우기) |
+
+| 담당 | 하는 일 | GPU |
+|---|---|---|
+| ① 모델 선택 | 베이스 모델 비교·결정, TEMPLATE 노트북 관리 | A100 |
+| ② 학습 레시피 | 해상도·손실·셔플 등 파인튜닝 설정 실험 | A100 |
+| ③ OCR 채널 | 사진 속 글자 추출 캐시 생성, OCR 효과 측정 | T4 |
+| ④ 분석·제출 | 오답 원인 분석, 캐글 제출·실험표 관리, 디스커션 | T4 |
+
+역할별 LLM 프롬프트: [`docs/TEAM_PROMPTS.md`](docs/TEAM_PROMPTS.md)
 
 ---
 
@@ -28,7 +48,7 @@
 | | |
 |---|---|
 | train / test | 6,714 / 6,714건 |
-| dev | 2,683건 (정답 없음, 교육생 5명 응답만) |
+| dev | 2,683건 (정답 없음, 교육생 5명 응답만 — 최다 일치 최대 3명이라 라벨로 쓰지 않음) |
 | 정답 분포 | a 1700 · b 1644 · c 1716 · d 1654 (균등) |
 
 ---
@@ -69,12 +89,28 @@ a) G마켓     b) G스토어    c) G숍      d) G마트
 
 → **해상도가 가장 큰 레버다.** 공식 베이스라인의 `IMAGE_SIZE=384`는
    384² = 147k 픽셀로, 원본 720×960(691k)의 **21%**다. 간판 글자가 뭉개진다.
+   우리는 768²(원본의 85%)를 기본으로 쓴다.
+
+### 3B → 7B에서 달라진 것
+
+| 유형 | 3B | 7B | 변화 |
+|---|---|---|---|
+| 위치·주소 | 0.718 | 0.872 | +15.4 |
+| 가격·할인 | 0.795 | 0.892 | +9.7 |
+| 문구·판독 | 0.901 | 0.941 | +4.0 |
+| 상호·이름 | 0.914 | 0.945 | +3.1 |
+| 메뉴·상품 | 0.783 | 0.783 | 0 |
+
+모델 크기는 **추론형**(위치·주소, 부정형)을 가장 많이 올렸다.
+남은 오답은 대부분 **읽기형**(가격·상호·문구)이라, 다음 무기는 해상도·OCR·파인튜닝이다.
+
+데이터 분석 상세: [`docs/EDA.md`](docs/EDA.md)
 
 ---
 
 ## 접근
 
-1. **Qwen2.5-VL 기반 LoRA 파인튜닝** — 공식 베이스라인 3B에서 시작, 7B로 확장
+1. **Qwen2.5-VL-7B 기반 LoRA 파인튜닝** — 3B·7B 제로샷 비교에서 7B가 +5.2%p(0.860 → 0.912)로 베이스 확정
 2. **choice_ce 손실** — 정답 위치에서 a/b/c/d 4개 로짓만 뽑아 4-class CE.
    추론이 4개만 보는데 학습은 전체 vocab(15만)에 CE를 걸던 불일치를 제거
 3. **보기 순서 셔플** — 학습 시 보기를 섞어 위치 편향 제거
@@ -91,16 +127,17 @@ a) G마켓     b) G스토어    c) G숍      d) G마트
 ```
 .
 ├── notebooks/
-│   └── baseline_v8_3b.ipynb      메인 파이프라인 (학습~제출까지 한 번에)
+│   └── baseline_v10_TEMPLATE.ipynb   메인 파이프라인 (사본 만들어 _이름 붙여 사용)
 ├── src/
-│   ├── build_ocr_cache.py        OCR 캐시 생성 (독립 실행, shard 분할 지원)
-│   ├── ocr_match.py              OCR 텍스트 ↔ 보기 매칭
-│   └── ocr_focus.py              OCR 박스 → focus crop
+│   ├── build_ocr_cache.py            OCR 캐시 생성 (독립 실행, shard 분할 지원)
+│   ├── ocr_match.py                  OCR 텍스트 ↔ 보기 매칭
+│   └── ocr_focus.py                  OCR 박스 → focus crop
 ├── docs/
-│   ├── EXPERIMENTS.md            실험 기록 (발표·제출 문서의 근거)
-│   ├── EXTERNAL_SOURCES.md       외부 모델·데이터 출처 (규칙상 제출 필수)
-│   └── EDA.md                    데이터 분석 상세
-└── submissions/                  제출 CSV (gitignore, 최종본만 수동 추가)
+│   ├── EXPERIMENTS.md                실험 기록 (발표·제출 문서의 근거)
+│   ├── EDA.md                        데이터 분석 상세
+│   ├── EXTERNAL_SOURCES.md           외부 모델·데이터 출처 (규칙상 제출 필수)
+│   └── TEAM_PROMPTS.md               역할별 LLM 프롬프트
+└── submissions/                      제출 CSV (gitignore, 최종본만 수동 추가)
 ```
 
 데이터·모델·체크포인트는 `.gitignore` 로 제외했다. 용량이 커서 깃에 올리면 안 된다.
@@ -108,9 +145,40 @@ a) G마켓     b) G스토어    c) G숍      d) G마트
 
 ---
 
-## 실행(로컬 재현 가이드)
+## 실행 — 코랩 (팀 기본 환경)
 
-### 1. 환경
+1. 드라이브 `MyDrive/Colab Notebooks/` 의 **TEMPLATE**을 우클릭 → 사본 만들기 → `_이름` 으로 변경
+2. 런타임 유형: 학습·추론은 **A100 (동시 2명까지)**, 데이터 확인·OCR·분석은 **T4**
+3. 0번 셀 `WHO` 에 본인 이름, `ZIP_PW` 에 암호 입력
+4. 위에서부터 실행. 3번 셀이 드라이브의 `ssafy-16-2-ai.zip` 을 `/content/data` 로 풀어준다 (약 40초)
+5. 1번 셀(설치)이 돌았으면 `런타임 → 세션 다시 시작` 후 0번부터 다시
+6. 다 쓰면 **`런타임 → 런타임 연결 해제 및 삭제`** (창만 닫으면 컴퓨팅 단위 계속 소모)
+
+실험은 0번 셀 변수만 바꾼다. 실험 사이에는 **5번 셀(모델 로드)을 다시 실행**해야
+이전 실험의 LoRA 위에 이어서 학습되지 않는다.
+
+> ⚠️ `ZIP_PW` 가 채워진 노트북은 깃허브에 올리지 않는다. 커밋 기록에 남으면 지울 수 없다.
+
+### OCR 캐시 (③, 노트북과 별개로 병렬 실행)
+
+노트북 0~3번 셀로 데이터를 푼 뒤 새 셀에서:
+
+```python
+!pip install -q easyocr
+!python /content/drive/MyDrive/ssafy_ai/src/build_ocr_cache.py \
+    --data-dir /content/data --out-dir /content/drive/MyDrive/ssafy_ai/ocr \
+    --split train --shard 0 --num-shards 2
+# 전부 끝나면
+!python /content/drive/MyDrive/ssafy_ai/src/build_ocr_cache.py \
+    --data-dir /content/data --out-dir /content/drive/MyDrive/ssafy_ai/ocr \
+    --split train --merge
+```
+
+`--out-dir` 은 반드시 드라이브로. 중간 저장되므로 끊겨도 같은 명령을 다시 실행하면 이어서 간다.
+
+---
+
+## 실행 — 로컬 (재현용)
 
 ```bash
 python -m venv baseline
@@ -118,7 +186,7 @@ source baseline/bin/activate      # Windows: .\baseline\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-데이터는 `data/` 에 아래 구조로 둔다 (깃에 올리지 않음).
+데이터는 `data/` 에 아래 구조로 두고, 노트북 0번 셀에서 `OFFLINE = True` 로 바꾼다.
 
 ```
 data/
@@ -126,55 +194,38 @@ data/
 └── train/  test/  dev/
 ```
 
-### 2. 메인 파이프라인
-
-`notebooks/baseline_v8_3b.ipynb` 를 위에서 아래로 실행하면 제출 파일까지 나온다.
-
-0번 셀에서 `WHO` 를 **본인 이름으로 바꿀 것.** 안 바꾸면 팀원끼리 체크포인트를 덮어쓴다.
-
-### 3. OCR 캐시 (선택, 병렬 실행 가능)
-
-```bash
-pip install easyocr
-# 4명이 shard 0,1,2,3 나눠서
-python src/build_ocr_cache.py --data-dir ./data --split train --shard 0 --num-shards 4
-python src/build_ocr_cache.py --data-dir ./data --split test  --shard 0 --num-shards 4
-# 합치기
-python src/build_ocr_cache.py --data-dir ./data --split train --merge
-```
-
-중간 저장되므로 끊겨도 같은 명령을 다시 실행하면 이어서 간다.
-
 ---
 
 ## 협업 규칙
 
-### 브랜치
+### 깃
 
-```
-main            항상 돌아가는 상태만. 직접 커밋 금지
-└── exp/이름    각자 실험
-```
+- 실제 작업은 **드라이브의 개인 사본 노트북**에서 한다. 깃에는 정리된 코드·문서만 올린다
+- `main` 하나를 쓰고, 올리기 전에 **반드시 `git pull` 먼저**
+- 올리기 전에 단톡에 "지금 올립니다" 한 줄
+- 노트북은 커밋 전에 **편집 → 모든 출력 지우기** (안 하면 머지 충돌이 잦다)
+- 같은 파일을 두 명이 동시에 고치지 않는다
 
-- 하루 한 번 이상 `main` 을 자기 브랜치로 머지해 충돌을 작게 유지
-- 홀드아웃 점수가 오른 변경만 `main` 으로 PR
+### 실험
+
+- **한 번에 변수 하나만** 바꾼다
+- 결과는 단톡에 `TAG + 홀드아웃 점수`로 공유하고 `docs/EXPERIMENTS.md` 에 기록
+- 홀드아웃 500건의 오차는 약 ±1.3%p. 1%p 안쪽 차이는 "비슷함"으로 본다
 
 ### 제출
 
 캐글 제출 한도는 **팀당 하루 20회, 팀 전체 공유**다.
 
-- 제출 담당을 한 명으로 고정한다
-- 제출 전에 `docs/EXPERIMENTS.md` 에 홀드아웃 점수를 먼저 기록한다
-- 제출 파일명에 정보를 박는다:
-  `sub_3b_choice_ce_shuf_img768_r16_e2_tta4_hold0.9312.csv`
-- 최종 채점 대상 선택은 **팀장이 확정하고 단톡 공지**. 그 뒤로 아무도 건드리지 않는다
+- 제출은 **④ 담당만** 한다. 다른 사람은 csv 파일명만 넘긴다
+- 홀드아웃이 기존 최고보다 높을 때만 제출한다
+- 제출 파일명에 정보를 박는다: `sub_7b_choice_ce_shuf_img768_r16_e1_hold0.9312.csv`
+- 최종 채점 대상 선택(2개)은 **마지막 날 팀장이 확정하고 단톡 공지**. 그 뒤로 아무도 건드리지 않는다
 
-### 노트북 충돌 주의
+### GPU (팀 계정 컴퓨팅 단위 공유)
 
-`.ipynb` 는 실행 결과까지 저장돼 머지 충돌이 잦다.
-
-- 커밋 전에 **Restart & Clear All Outputs** 를 실행한다
-- 같은 노트북을 두 명이 동시에 고치지 않는다. 고칠 일이 있으면 단톡에 먼저 말한다
+- A100은 ①②만, 동시에 2명까지
+- 코드 확인·EDA·OCR은 T4
+- 다 쓰면 런타임 연결 해제
 
 ---
 
@@ -184,7 +235,7 @@ main            항상 돌아가는 상태만. 직접 커밋 금지
 - [ ] 모델 코드 — 이 레포
 - [ ] 추가 문서 — 데이터 처리·모델 개발 과정 설명 (`docs/` 를 정리해서)
 - [ ] 외부 자료 링크 — `docs/EXTERNAL_SOURCES.md`
-- [ ] 재현성 — SEED 고정 확인, 최종 LoRA 어댑터 백업
+- [ ] 재현성 — SEED 고정 확인, 최종 LoRA 어댑터 백업 (팀 계정 회수 대비 개인 드라이브에도)
 
 > ⚠️ **API 호출 추론은 금지다.** GPT-4V / Gemini / Claude API 로 문제를 푸는 것은 실격.
 > 로컬에서 실행하는 오픈소스 모델(OCR 포함)은 허용된다.
