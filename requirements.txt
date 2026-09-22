@@ -2,7 +2,7 @@
 #   예) pip install torch --index-url https://download.pytorch.org/whl/cu128
 torch
 torchvision
-transformers>=4.49.0
+transformers>=4.57.0   # Qwen3-VL 지원
 accelerate>=0.34.2
 peft>=0.13.2
 bitsandbytes>=0.43.3

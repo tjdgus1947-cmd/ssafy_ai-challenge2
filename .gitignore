@@ -17,7 +17,7 @@ test.csv
 dev.csv
 sample_submission.csv
 
-# 사전학습 모델 (Qwen 3B 7.5GB, 7B 16GB)
+# 사전학습 모델 (Qwen 7B 16GB, 8B 17GB, 32B 67GB)
 downloads/
 models/
 *.safetensors
@@ -70,3 +70,15 @@ desktop.ini
 kaggle.json
 .env
 *.key
+
+# 확률 파일·홀드아웃 예측 (드라이브로 공유)
+hold_pred_*.csv
+valid_*.pt
+test_*.pt
+big2000_*.pt
+
+# 비번이 들어간 개인 노트북 사본 (TEMPLATE 만 커밋)
+notebooks/*_sh.ipynb
+notebooks/*_jy.ipynb
+notebooks/*_eunah.ipynb
+notebooks/*_huiwon.ipynb
