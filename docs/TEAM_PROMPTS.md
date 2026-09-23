@@ -25,7 +25,7 @@
 
 | 보내는 사람 → 받는 사람 | 재료 | 형태 · 위치 |
 |---|---|---|
-| 성현 → 전원 | 팀 TEMPLATE | 깃허브 `notebooks/baseline_v10_1_TEMPLATE.ipynb` |
+| 성현 → 전원 | 팀 TEMPLATE | 깃허브 `notebooks/baseline_v10_2_TEMPLATE.ipynb` |
 | 희원 → 정연 | OCR 캐시 (텍스트 + 박스) | `ssafy_ai/ocr/ocr_train.csv`, `ocr_test.csv` (id, ocr_text, n_box, ocr_json) |
 | 희원 → 성현 | OCR 매칭 점수 | `ssafy_ai/ocr/ocr_scores_train.csv`(train 셔플 순서), `ocr_scores_test.csv` (id, score_a~d) |
 | 정연 → 성현 | 학습 모델 확률 + TAG + 홀드아웃 점수 | `ssafy_ai/<WHO>/valid_<TAG>.pt`, `test_<TAG>_r0.pt` |
@@ -51,7 +51,7 @@
 ## 공통 규칙
 
 ### 노트북
-1. **TEMPLATE을 직접 실행하지 않는다.** 드라이브에 사본 저장 → `baseline_v10_1_<이름>`.
+1. **TEMPLATE을 직접 실행하지 않는다.** 드라이브에 사본 저장 → `baseline_v10_2_<이름>`.
 2. **`VALID_N = 2000`, `SEED = 42`는 바꾸지 않는다.** 바꾸면 홀드아웃이 달라져 앙상블에 못 넣는다.
 3. 풀학습은 `TRAIN_N = 4714`. 6000이 아니다.
 4. 학습 후 다른 모델을 올릴 때 메모리 부족이 나면 **런타임 → 세션 다시 시작**.
@@ -63,7 +63,8 @@
 
 ### 앙상블 · 제출
 - 앙상블은 **균등 평균**. 가중치 탐색은 과적합된다 (EXPERIMENTS 실패 기록 참고).
-- 새 멤버는 균등 평균에 넣었을 때 홀드아웃이 오를 때만 추가한다. 같은 모델의 학습 전/후는 겹치므로 하나만 쓴다.
+- 새 멤버는 균등 평균에 넣었을 때 **H2000 앞 1000건 · 뒤 1000건 양쪽에서 모두 오를 때만** 추가한다 (`notebooks/ensemble_cpu.ipynb` 그리디).
+- 단독 점수가 높다고 좋은 멤버가 아니다. **다르게 틀리는 모델**이 앙상블에 기여한다 (7B 제로샷 → 학습본 교체 시 하락).
 - 캐글 제출은 팀 하루 20회 공유. 제출하면 단톡에 한 줄.
 
 ### 기록
@@ -74,10 +75,10 @@
 ## 새 실험 체크리스트 (학습)
 
 ```
-[ ] TEMPLATE v10.1 사본, WHO·ZIP_PW 채움
+[ ] TEMPLATE v10.2 사본, WHO·ZIP_PW 채움
 [ ] 0번: MODEL_SIZE / IMAGE_SIZE / TRAIN_N / EPOCHS 확인, VALID_N=2000·SEED=42 그대로
-[ ] 0~7 실행 (7번 클릭 후 Ctrl+F8)
-[ ] 8번 첫 셀 (제로샷, 저장돼 있으면 몇 초) — 12번 비교에 필요
+[ ] 0번: RUN_ENSEMBLE=False, (긴 학습이면) RUN_ZS_VALID=False
+[ ] 런타임 → 모두 실행 (밤샘이면 맨 끝에 runtime.unassign() 셀 추가)
 [ ] 10번 검증 전부 OK
 [ ] 11번 첫 줄 TAG 확인
 [ ] 12번 평가 → 13번 test 추론

@@ -18,10 +18,10 @@
 | 이름 | 링크 | 사용 | 역할 |
 |---|---|---|---|
 | Qwen2.5-VL-3B-Instruct | https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct | 비교만 | 공식 베이스라인, 제로샷 기준점 (0.860) |
-| Qwen2.5-VL-7B-Instruct | https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct | **사용** | 제로샷 앙상블 멤버 (다른 계열로 다양성 제공) |
-| Qwen3-VL-8B-Instruct | https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct | **사용** | 주력 베이스. LoRA 학습 (768 / 1024) |
-| Qwen3-VL-32B-Instruct | https://huggingface.co/Qwen/Qwen3-VL-32B-Instruct | **사용** | LoRA 학습 앙상블 멤버 |
-| Qwen3-VL-4B-Instruct | https://huggingface.co/Qwen/Qwen3-VL-4B-Instruct | 검토 | 경량 앙상블 후보 |
+| Qwen2.5-VL-7B-Instruct | https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct | **사용** | 제로샷 앙상블 멤버 (다른 계열로 다양성 제공). LoRA 학습본은 비교용 |
+| Qwen3-VL-8B-Instruct | https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct | **사용** | LoRA 학습 앙상블 멤버 (768) |
+| Qwen3-VL-32B-Instruct | https://huggingface.co/Qwen/Qwen3-VL-32B-Instruct | **사용** | LoRA 학습 앙상블 멤버 (768 / 1024) |
+| Qwen3-VL-4B-Instruct | https://huggingface.co/Qwen/Qwen3-VL-4B-Instruct | 실험 | LoRA 학습(0.9395), 앙상블 미채택 |
 
 모든 모델은 bitsandbytes 4bit(nf4)로 로드하고 LoRA(r=16)만 학습했다. 가중치 원본은 수정하지 않았다.
 
@@ -31,7 +31,7 @@
 
 | 이름 | 링크 | 라이선스 | 용도 | 사용 |
 |---|---|---|---|---|
-| EasyOCR | https://github.com/JaidedAI/EasyOCR | Apache-2.0 | 한국어 OCR (텍스트 + 박스) → 매칭 점수 | **사용** |
+| EasyOCR | https://github.com/JaidedAI/EasyOCR | Apache-2.0 | 한국어 OCR (텍스트 + 박스) → 매칭 점수 · 프롬프트 주입 실험 | 실험 (최종 앙상블 미포함) |
 | PaddleOCR | https://github.com/PaddlePaddle/PaddleOCR | Apache-2.0 | 한국어 OCR 대안 (품질 비교) | 검토 |
 | transformers | https://github.com/huggingface/transformers | Apache-2.0 | 모델 로딩·추론 | 사용 |
 | PEFT | https://github.com/huggingface/peft | Apache-2.0 | LoRA 학습 | 사용 |
